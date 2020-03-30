@@ -9,13 +9,17 @@ import (
 	"time"
 )
 
-func Generate(dirPath string, source Source, generateUser string, description string) (*Image, error){
+func GenerateFromRepo(dirPath string, source Source, generateUser string, description string, baseSolrZKPath string) (*Image, error) {
 	root, err := generateNode(dirPath, "/", true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate IMG image error %s", err.Error())
 	}
+	return GenerateFromNode(root, source, generateUser, description, baseSolrZKPath)
+}
+
+func GenerateFromNode(root *ZKNode, source Source, generateUser string, description string, solrZKPath string) (*Image, error) {
 	img := Image{
-		Header:    Header{
+		Header: Header{
 			Magic:             Magic,
 			SHA256Checksum:    root.SHA256Checksum,
 			Version:           Version,
@@ -24,18 +28,19 @@ func Generate(dirPath string, source Source, generateUser string, description st
 			GenerateUser:      generateUser,
 			Description:       description,
 			TimeGenerated:     time.Now(),
+			SolrZKPath:        solrZKPath,
 		},
 		ZKRoot:    root,
 		IndexData: &IndexDataRoot{},
 	}
 	validate := img.ZKRoot.validateNode()
-	if validate != nil{
+	if validate != nil {
 		return nil, fmt.Errorf("node Merkle tree validation failed error %s", validate.Error())
 	}
-	return &img, err
+	return &img, nil
 }
 
-func generateNode(dirPath string, relativePath string, isRoot bool) (*ZKNode, error){
+func generateNode(dirPath string, relativePath string, isRoot bool) (*ZKNode, error) {
 	files, err := ioutil.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
@@ -43,14 +48,14 @@ func generateNode(dirPath string, relativePath string, isRoot bool) (*ZKNode, er
 	curName := filepath.Base(dirPath)
 	var data []uint8
 	data, err = ioutil.ReadFile(filepath.Join(dirPath, curName))
-	if err == err.(*os.PathError){
+	if err == err.(*os.PathError) {
 		data = []uint8("")
 	} else if err != nil {
 		return nil, err
 	}
 	children := make([]*ZKNode, 0)
 	for _, file := range files {
-		if file.IsDir() && !strings.HasPrefix(file.Name(), "."){
+		if file.IsDir() && !strings.HasPrefix(file.Name(), ".") {
 			node, err := generateNode(filepath.Join(dirPath, file.Name()), filepath.Join(relativePath, file.Name()), false)
 			if err != nil {
 				return nil, err
@@ -60,9 +65,9 @@ func generateNode(dirPath string, relativePath string, isRoot bool) (*ZKNode, er
 	}
 	thisNode := ZKNode{
 		Children: children,
-		Data: string(data),
-		Path: relativePath,
-		IsEmpty: len(data) == 0,
+		Data:     string(data),
+		Path:     relativePath,
+		IsEmpty:  len(data) == 0,
 	}
 	thisNode.SHA256Checksum = thisNode.GenerateNodeHash()
 	return &thisNode, nil

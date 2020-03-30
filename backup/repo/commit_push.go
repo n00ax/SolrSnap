@@ -1,12 +1,12 @@
 package repo
 
 import (
-	"bsb-pr-solr-snapshot-service/app"
 	"encoding/json"
 	"fmt"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	"solr-snapshot-service/config"
 	"time"
 )
 
@@ -16,7 +16,7 @@ type CommitMessage struct {
 	StartMethod string `json:"startMethod"`
 }
 
-func commit(dirPath string, repository * git.Repository) error{
+func commit(dirPath string, repository *git.Repository) error {
 	workTree, err := repository.Worktree()
 	if err != nil {
 		return fmt.Errorf("couldn't get the repository worktree, error %s", dirPath)
@@ -27,7 +27,7 @@ func commit(dirPath string, repository * git.Repository) error{
 		return fmt.Errorf("couldn't add files with pattern %s error %s", globPattern, err.Error())
 	}
 	commitMessage, err := generateCommitMessage()
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	_, err = workTree.Commit(commitMessage, &git.CommitOptions{
@@ -38,8 +38,8 @@ func commit(dirPath string, repository * git.Repository) error{
 			When:  time.Now(),
 		},
 		Committer: &object.Signature{
-			Name:  app.ProductName,
-			Email: app.CommitterEmail,
+			Name:  config.ProductName,
+			Email: config.CommitterEmail,
 			When:  time.Now(),
 		},
 	})
@@ -59,8 +59,8 @@ func push(auth transport.AuthMethod, repository *git.Repository) error {
 
 func generateCommitMessage() (string, error) {
 	json, err := json.Marshal(CommitMessage{
-		Service:     app.ProductName,
-		CommitHash:  app.GitCommit,
+		Service:    config.ProductName,
+		CommitHash: config.GitCommit,
 		//TODO replace
 		StartMethod: "service",
 	})
@@ -69,5 +69,3 @@ func generateCommitMessage() (string, error) {
 	}
 	return string(json), nil
 }
-
-

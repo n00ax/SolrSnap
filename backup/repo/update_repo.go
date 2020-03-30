@@ -1,12 +1,12 @@
 package repo
 
 import (
-	"bsb-pr-solr-snapshot-service/backup/blob"
 	"fmt"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"solr-snapshot-service/backup/blob"
 )
 import log "github.com/sirupsen/logrus"
 
@@ -14,7 +14,7 @@ const DirSaveMode = 0777
 const FileSaveMode = 0777
 
 func Update(gitRemote string, gitUsername string, gitPassword string, payload blob.Readable) error {
-	log.Info("Save job started to Git remote = ", gitRemote, " total objects = ", 1);
+	log.Info("Save job started to Git remote = ", gitRemote, " total objects = ", 1)
 	// Create temp file, and then store data there
 	dirPath, err := ioutil.TempDir("/tmp", "temp-repo")
 	if err != nil {
@@ -35,7 +35,7 @@ func Update(gitRemote string, gitUsername string, gitPassword string, payload bl
 		return err
 	}
 	log.Info("Pushing new data to Git")
-	err  = commit(dirPath, repo)
+	err = commit(dirPath, repo)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func Update(gitRemote string, gitUsername string, gitPassword string, payload bl
 	}
 	return nil
 }
-func Create(repoPath string, payload blob.Readable) error{
+func Create(repoPath string, payload blob.Readable) error {
 	log.Info("Create job started to local repo = %s", payload)
 	err := os.Mkdir(repoPath, DirSaveMode)
 	if err != nil {
@@ -74,7 +74,7 @@ func processNode(dirPath string, node blob.Readable) error {
 		_, fileName := filepath.Split(node.GetPath())
 		newDirDataPath := fmt.Sprintf("%s/%s", newDirPath, fileName)
 		err = ioutil.WriteFile(newDirDataPath, []byte(node.GetData()), FileSaveMode)
-		if err != nil{
+		if err != nil {
 			return fmt.Errorf("could not create node data file %s with zookeeper path %s error %s", newDirDataPath, node.GetPath(), err.Error())
 		}
 	}

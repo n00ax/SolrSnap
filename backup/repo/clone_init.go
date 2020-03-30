@@ -35,11 +35,10 @@ func cloneRemote(gitRemote string, auth transport.AuthMethod, dirPath string) (*
 	return repo, nil
 }
 
-func initEmptyLocal(dirPath string) (*git.Repository, error){
+func initEmptyLocal(dirPath string) (*git.Repository, error) {
 	repo, err := git.PlainInit(dirPath, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not init repo inside %s", dirPath)
 	}
 	return repo, nil
 }
-

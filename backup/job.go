@@ -1,25 +1,25 @@
 package backup
 
 import (
-	"bsb-pr-solr-snapshot-service/app"
-	"bsb-pr-solr-snapshot-service/backup/fusion"
-	"bsb-pr-solr-snapshot-service/backup/repo"
 	log "github.com/sirupsen/logrus"
+	"solr-snapshot-service/backup/fusion"
+	"solr-snapshot-service/backup/repo"
+	"solr-snapshot-service/config"
 	"time"
 )
 
-func createJobResponse(err error, start time.Time) map[string]string{
+func createJobResponse(err error, start time.Time) map[string]string {
 	if err != nil {
 		return map[string]string{
-			"status" : "failure",
-			"error" : err.Error(),
-			"message" : "Something failed, probably my fault :( -Noah",
+			"status":  "failure",
+			"error":   err.Error(),
+			"message": "Something failed, probably my fault :( -Noah",
 		}
-	} else{
+	} else {
 		return map[string]string{
-			"status" : "success",
-			"duration" : time.Now().Sub(start).String(),
-			"message" : "Job complete, have a nice day :) -Noah",
+			"status":   "success",
+			"duration": time.Now().Sub(start).String(),
+			"message":  "Job complete, have a nice day :) -Noah",
 		}
 	}
 }
@@ -27,12 +27,12 @@ func createJobResponse(err error, start time.Time) map[string]string{
 func StartJob() (map[string]string, error) {
 	start := time.Now()
 	log.Info("Starting export from Fusion Zookeeper at ", time.Now())
-	export, err := fusion.GetZKExport(app.FusionBaseUrl)
-	if err != nil{
+	export, err := fusion.GetZKExport(config.FusionBaseUrl)
+	if err != nil {
 		return createJobResponse(err, start), err
 	}
-	err = repo.Update(app.GitRemote, app.GitUsername, app.GitPassword, export.Response)
-	if err != nil{
+	err = repo.Update(config.GitRemote, config.GitUsername, config.GitPassword, export.Response)
+	if err != nil {
 		return createJobResponse(err, start), err
 	}
 	log.Info(export.Response.Path)

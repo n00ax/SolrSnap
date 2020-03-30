@@ -1,11 +1,11 @@
-package app
+package config
 
 import "os"
 
-const ProductName =  "solr-snapshot-service"
+const ProductName = "solr-snapshot-service"
 const CommitterEmail = "noah.whiteis@bluestembrands.com"
+
 var GitCommit string = "unavailable"
-var AvailableActions = "backupFusion, createBlob, loadBlob"
 
 // ENV Pulled Here
 var GitRemote = os.Getenv("GIT_REMOTE")
